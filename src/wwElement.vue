@@ -14,7 +14,7 @@
         @end="setDrag(false)"
     >
         <template #header>
-            <div v-if="!hideHeader" class="ww-stack-header" @click="toggleCollapsed">
+            <div v-if="!hideHeader" class="ww-stack-header">
                 <wwLayout v-if="collapsed" path="collapsedHeaderElement"></wwLayout>
                 <wwLayout v-else path="headerElement"></wwLayout>
             </div>
@@ -71,8 +71,11 @@ export default {
         // Self-contained fallback for standalone use (no parent wiring collapse via ww-props):
         // not readonly, so it also stays settable via a normal "Set variable" workflow action.
         // When there IS a parent (ww-kanban), the `collapsed` computed below defers to its
-        // `collapsed` ww-prop instead, and clicking the header asks the parent to toggle it via
-        // customCollapseHandler rather than touching this variable at all.
+        // `collapsed` ww-prop instead, and the "Toggle collapse" element action (see
+        // toggleCollapsed/ww-config.js actions) asks the parent to toggle it via
+        // customCollapseHandler rather than touching this variable at all. There's no built-in
+        // click handler anywhere in this file - toggling is entirely up to whatever the designer
+        // wires inside headerElement/collapsedHeaderElement via that action.
         const { value: internalCollapsed, setValue: setInternalCollapsed } = wwLib.wwVariable.useComponentVariable({
             uid: props.uid,
             name: "collapsed",

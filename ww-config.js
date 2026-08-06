@@ -15,6 +15,12 @@ export default {
         ]
     },
     states: ['readonly', 'collapsed'],
+    actions: [
+        {
+            label: { en: "Toggle collapse" },
+            action: "toggleCollapsed",
+        },
+    ],
     triggerEvents: [
         {
             name: "item:moved",
