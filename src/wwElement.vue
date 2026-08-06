@@ -7,12 +7,17 @@
         :sort="sortable"
         :handle="handle?.length ? `.${handle}` : null"
         :disabled="isEditing || isReadonly"
+        class="ww-stack-draggable"
+        :class="{ 'ww-stack-draggable--collapsed': collapsed }"
         @change="onChange"
         @start="setDrag(true)"
         @end="setDrag(false)"
     >
         <template #header>
-            <wwLayout path="headerElement"></wwLayout>
+            <div class="ww-stack-header" @click="toggleCollapsed">
+                <wwLayout v-if="collapsed" path="collapsedHeaderElement"></wwLayout>
+                <wwLayout v-else path="headerElement"></wwLayout>
+            </div>
         </template>
         <template #item="{ element, index: itemIndex }">
             <div class="draggable-item">
@@ -28,13 +33,14 @@
             </div>
         </template>
         <template #footer>
-            <wwLayout path="footerElement"></wwLayout>
+            <wwLayout path="footerElement" class="ww-stack-footer"></wwLayout>
         </template>
     </draggable>
 </template>
 
 <script>
 import draggable from "vuedraggable";
+import { watch } from "vue";
 
 export default {
     components: {
@@ -61,12 +67,27 @@ export default {
             defaultValue: false,
             readonly: true,
         });
-        return { isDragging, setDrag };
+        // Not readonly: collapse is driven by the built-in header click below, but also stays
+        // settable via a normal "Set variable" workflow action (e.g. a page-level "collapse all").
+        const { value: collapsed, setValue: setCollapsed } = wwLib.wwVariable.useComponentVariable({
+            uid: props.uid,
+            name: "collapsed",
+            type: "boolean",
+            defaultValue: !!props.content.collapsed,
+        });
+        watch(
+            () => props.content.collapsed,
+            (value) => setCollapsed(!!value)
+        );
+        return { isDragging, setDrag, collapsed, setCollapsed };
     },
     data: () => ({
         internalItems: [],
     }),
     methods: {
+        toggleCollapsed() {
+            this.setCollapsed(!this.collapsed);
+        },
         onChange(change) {
             this.customHandler &&
                 this.customHandler(change, { ...this.wwElementState.props, updatedStackItems: this.internalItems });
@@ -182,5 +203,16 @@ export default {
 }
 .draggable-item :deep(* .ww-element) {
     pointer-events: unset !important;
+}
+
+/**
+ * Collapse hides items/footer with display:none rather than unmounting the draggable root
+ * (no v-if anywhere in this file) - the sortable container itself stays exactly as mounted
+ * and registered with SortableJS as it was expanded, so it remains a valid drop target while
+ * collapsed; only its visible footprint shrinks to whatever the header content renders as.
+ */
+.ww-stack-draggable--collapsed :deep(.draggable-item),
+.ww-stack-draggable--collapsed :deep(.ww-stack-footer) {
+    display: none;
 }
 </style>

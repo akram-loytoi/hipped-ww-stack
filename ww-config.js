@@ -9,6 +9,7 @@ export default {
             "items",
             "sortable",
             "readonly",
+            "collapsed",
             "customDragHandle",
             ["handleClass"],
         ]
@@ -91,6 +92,13 @@ export default {
                 group: "Header",
             },
         },
+        collapsedHeaderElement: {
+            hidden: true,
+            defaultValue: [{ isWwObject: true, type: "ww-text" }],
+            navigator: {
+                group: "Collapsed header",
+            },
+        },
         footerElement: {
             hidden: true,
             defaultValue: [],
@@ -108,6 +116,24 @@ export default {
             bindingValidation: {
                 type: "boolean",
                 tooltip: "A boolean that defines if the input is in readonly: `true | false`",
+            },
+            /* wwEditor:end */
+        },
+        collapsed: {
+            hidden: (content, sidePanelContent, boundProps, wwProps) => !!(wwProps && wwProps.collapsed !== undefined),
+            label: { en: "Collapsed" },
+            type: "OnOff",
+            section: "settings",
+            bindable: true,
+            defaultValue: false,
+            propertyHelp: {
+                tooltip:
+                    "Sets the initial collapsed state. The stack also exposes a writable `collapsed` component variable and toggles itself when its header is clicked.",
+            },
+            /* wwEditor:start */
+            bindingValidation: {
+                type: "boolean",
+                tooltip: "A boolean that sets the initial collapsed state: `true | false`",
             },
             /* wwEditor:end */
         },
