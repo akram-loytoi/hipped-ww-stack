@@ -14,7 +14,7 @@ export default {
             ["handleClass"],
         ]
     },
-    states: ['readonly'],
+    states: ['readonly', 'collapsed'],
     triggerEvents: [
         {
             name: "item:moved",

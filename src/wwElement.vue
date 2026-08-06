@@ -174,6 +174,14 @@ export default {
             return !!(this.wwElementState.props.readonly || this.content.readonly);
         },
         collapsed() {
+            /* wwEditor:start */
+            // While selected in the editor, defer to the states list so switching to the
+            // "Collapsed" state tab actually previews the collapsed look to design against,
+            // rather than whatever the real runtime value happens to be.
+            if (this.wwEditorState.isSelected) {
+                return this.wwElementState.states.includes("collapsed");
+            }
+            /* wwEditor:end */
             return this.wwElementState.props.collapsed !== undefined
                 ? this.wwElementState.props.collapsed
                 : this.internalCollapsed;
@@ -205,6 +213,16 @@ export default {
                     this.$emit("add-state", "readonly");
                 } else {
                     this.$emit("remove-state", "readonly");
+                }
+            },
+        },
+        collapsed: {
+            immediate: true,
+            handler(value) {
+                if (value) {
+                    this.$emit("add-state", "collapsed");
+                } else {
+                    this.$emit("remove-state", "collapsed");
                 }
             },
         },
