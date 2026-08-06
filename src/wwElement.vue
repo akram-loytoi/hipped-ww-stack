@@ -14,7 +14,7 @@
         @end="setDrag(false)"
     >
         <template #header>
-            <div class="ww-stack-header" @click="toggleCollapsed">
+            <div v-if="!hideHeader" class="ww-stack-header" @click="toggleCollapsed">
                 <wwLayout v-if="collapsed" path="collapsedHeaderElement"></wwLayout>
                 <wwLayout v-else path="headerElement"></wwLayout>
             </div>
@@ -33,7 +33,7 @@
             </div>
         </template>
         <template #footer>
-            <wwLayout path="footerElement" class="ww-stack-footer"></wwLayout>
+            <wwLayout v-if="!hideFooter" path="footerElement" class="ww-stack-footer"></wwLayout>
         </template>
     </draggable>
 </template>
@@ -177,6 +177,12 @@ export default {
             return this.wwElementState.props.collapsed !== undefined
                 ? this.wwElementState.props.collapsed
                 : this.internalCollapsed;
+        },
+        hideHeader() {
+            return !!this.wwElementState.props.hideHeader;
+        },
+        hideFooter() {
+            return !!this.wwElementState.props.hideFooter;
         },
     },
     watch: {
