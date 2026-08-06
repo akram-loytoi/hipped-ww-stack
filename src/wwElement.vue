@@ -49,6 +49,7 @@ export default {
     inject: {
         customHandler: { defaultValue: null },
         customDragHandler: { defaultValue: null },
+        customCollapseHandler: { defaultValue: null },
     },
     props: {
         wwElementState: { type: Object, required: true },
@@ -67,9 +68,12 @@ export default {
             defaultValue: false,
             readonly: true,
         });
-        // Not readonly: collapse is driven by the built-in header click below, but also stays
-        // settable via a normal "Set variable" workflow action (e.g. a page-level "collapse all").
-        const { value: collapsed, setValue: setCollapsed } = wwLib.wwVariable.useComponentVariable({
+        // Self-contained fallback for standalone use (no parent wiring collapse via ww-props):
+        // not readonly, so it also stays settable via a normal "Set variable" workflow action.
+        // When there IS a parent (ww-kanban), the `collapsed` computed below defers to its
+        // `collapsed` ww-prop instead, and clicking the header asks the parent to toggle it via
+        // customCollapseHandler rather than touching this variable at all.
+        const { value: internalCollapsed, setValue: setInternalCollapsed } = wwLib.wwVariable.useComponentVariable({
             uid: props.uid,
             name: "collapsed",
             type: "boolean",
@@ -77,16 +81,20 @@ export default {
         });
         watch(
             () => props.content.collapsed,
-            (value) => setCollapsed(!!value)
+            (value) => setInternalCollapsed(!!value)
         );
-        return { isDragging, setDrag, collapsed, setCollapsed };
+        return { isDragging, setDrag, internalCollapsed, setInternalCollapsed };
     },
     data: () => ({
         internalItems: [],
     }),
     methods: {
         toggleCollapsed() {
-            this.setCollapsed(!this.collapsed);
+            if (this.customCollapseHandler) {
+                this.customCollapseHandler({ ...this.wwElementState.props });
+            } else {
+                this.setInternalCollapsed(!this.internalCollapsed);
+            }
         },
         onChange(change) {
             this.customHandler &&
@@ -164,6 +172,11 @@ export default {
             /* wwEditor:end */
             // Ensure to return a boolean as vuedraggable interpret undefined as true
             return !!(this.wwElementState.props.readonly || this.content.readonly);
+        },
+        collapsed() {
+            return this.wwElementState.props.collapsed !== undefined
+                ? this.wwElementState.props.collapsed
+                : this.internalCollapsed;
         },
     },
     watch: {
